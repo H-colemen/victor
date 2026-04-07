@@ -1,0 +1,127 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Unna:wght@400;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222 47% 11%;
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
+    --primary: 217 100% 45%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 220 14% 96%;
+    --secondary-foreground: 222 47% 11%;
+    --muted: 220 14% 96%;
+    --muted-foreground: 215 16% 47%;
+    --accent: 217 100% 45%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 217 100% 45%;
+    --radius: 0.5rem;
+    
+    /* Custom theme colors */
+    --color-dark: #0F172A;
+    --color-mid: #364151;
+    --color-accent: #005EE9;
+    --color-white: #FFFFFF;
+    --color-light: #D1DAE5;
+    --color-footer-bg: #070614;
+    --font-body: 'DM Sans', sans-serif;
+    --font-heading: 'Unna', serif;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  
+  html {
+    scroll-behavior: smooth;
+  }
+  
+  body {
+    @apply bg-white text-[#364151] antialiased;
+    font-family: var(--font-body);
+    font-size: 16px;
+    overflow-x: hidden;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-heading);
+    font-weight: 400;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply inline-block bg-white text-[#0F172A] px-9 py-3.5 text-sm font-medium tracking-wide transition-all duration-200;
+  }
+  
+  .btn-primary:hover {
+    @apply bg-[#0F172A] text-white -translate-y-0.5;
+  }
+  
+  .btn-outline {
+    @apply inline-block border-[1.5px] border-[#005EE9] text-[#005EE9] px-6 py-2.5 text-sm font-medium transition-all duration-200;
+  }
+  
+  .btn-outline:hover {
+    @apply bg-[#0F172A] border-[#0F172A] text-white;
+  }
+  
+  .section-title {
+    @apply text-[clamp(28px,4vw,40px)] text-[#0F172A] font-normal;
+    font-family: var(--font-heading);
+  }
+  
+  .container-custom {
+    @apply max-w-[1240px] mx-auto px-6 md:px-8;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a1a1a1;
+}
+
+/* Product card hover effect */
+.product-card {
+  @apply transition-shadow duration-200;
+}
+
+.product-card:hover {
+  box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+}
+
+/* Animation for add to cart button */
+@keyframes cartPulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
+.cart-pulse {
+  animation: cartPulse 0.3s ease;
+}
