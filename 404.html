@@ -1,12 +1,19 @@
-<!doctype html>
-<html lang="en">
+<!DOCTYPE html>
+<html>
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta charset="utf-8">
     <title>Home & Living Furnitures</title>
+    <script>
+      var l = window.location;
+      sessionStorage.redirect = l.href;
+      l.replace(
+        l.protocol + '//' + l.host +
+        l.pathname.split('/').slice(0, 2).join('/') +
+        '/?p=' + l.pathname.split('/').slice(2).join('/') +
+        (l.search ? '&q=' + l.search.slice(1) : '') +
+        l.hash
+      );
+    </script>
   </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+  <body></body>
 </html>
