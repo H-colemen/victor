@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Lock, Mail, Eye, EyeOff } from 'lucide-react';
+import { supabase } from '@/lib/supabase';
 
 export default function AdminLogin() {
   const navigate = useNavigate();
@@ -15,12 +16,40 @@ export default function AdminLogin() {
     setError('');
     setIsLoading(true);
 
-    if (email === 'admin@homeandlivingfurnitures.com' && password === 'admin123') {
-      localStorage.setItem('admin_token', 'demo_token');
-      navigate('/admin');
-    } else {
+    const { data, error: authError } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    if (authError || !data.session) {
       setError('Invalid email or password');
+      setIsLoading(false);
+      return;
     }
+
+    // Verify this auth user is actually in admin_users table
+    const { data: adminUser, error: adminError } = await supabase
+      .from('admin_users')
+      .select('id, email, role')
+      .eq('email', email)
+      .eq('is_active', true)
+      .single();
+
+    if (adminError || !adminUser) {
+      await supabase.auth.signOut();
+      setError('Access denied. Not an admin account.');
+      setIsLoading(false);
+      return;
+    }
+
+    // Update last login timestamp
+    await supabase
+      .from('admin_users')
+      .update({ last_login_at: new Date().toISOString() })
+      .eq('id', adminUser.id);
+
+    // Supabase session is now active — no localStorage token needed
+    navigate('/admin');
 
     setIsLoading(false);
   };
@@ -33,7 +62,7 @@ export default function AdminLogin() {
             <Lock className="w-8 h-8 text-white" />
           </div>
           <h1 className="text-2xl font-serif text-[#0F172A]">Admin Login</h1>
-          <p className="text-gray-500 text-sm mt-1">HavenCraft Homes Dashboard</p>
+          <p className="text-gray-500 text-sm mt-1">homecraft & Living Dashboard</p>
         </div>
 
         {error && (
@@ -88,10 +117,6 @@ export default function AdminLogin() {
             {isLoading ? 'Signing in...' : 'Sign In'}
           </button>
         </form>
-
-        <p className="text-center text-sm text-gray-500 mt-6">
-          Demo: admin@homeandlivingfurnitures.com / admin123
-        </p>
       </div>
     </div>
   );

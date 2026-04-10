@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Link, useParams, Navigate } from 'react-router-dom';
-import { Star, Minus, Plus, Check, Truck, Shield, RotateCcw, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useParams, Navigate } from 'react-router-dom';
+import { Star, Minus, Plus, Check, ChevronLeft, ChevronRight, MessageCircle } from 'lucide-react';
 import { getProductBySlug, getRelatedProducts } from '@/services/productService';
 import { useCart } from '@/context/CartContext';
 import ProductCard from '@/components/ui-custom/ProductCard';
@@ -9,17 +9,15 @@ import type { Product } from '@/lib/supabase';
 export default function ProductDetail() {
   const { id } = useParams<{ id: string }>();
   const { addToCart } = useCart();
-  
   const [product, setProduct] = useState<Product | null>(null);
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  
   const [quantity, setQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState(0);
-  const [selectedColor, setSelectedColor] = useState<string>('');
-  const [selectedSize, setSelectedSize] = useState<string>('');
+  const [selectedColor, setSelectedColor] = useState('');
+  const [selectedSize, setSelectedSize] = useState('');
   const [addedToCart, setAddedToCart] = useState(false);
-  const [activeTab, setActiveTab] = useState<'description' | 'reviews'>('description');
+  const [activeTab, setActiveTab] = useState<'description' | 'additional' | 'reviews'>('description');
 
   useEffect(() => {
     loadProduct();
@@ -28,43 +26,52 @@ export default function ProductDetail() {
   const loadProduct = async () => {
     if (!id) return;
     setIsLoading(true);
-    
     const productData = await getProductBySlug(id);
     if (productData) {
       setProduct(productData);
-      
-      // Set default selections
+
       const colorVariants = productData.variants?.filter(v => v.variant_type === 'color') || [];
       const sizeVariants = productData.variants?.filter(v => v.variant_type === 'size') || [];
-      
-      if (colorVariants.length > 0) {
-        setSelectedColor(colorVariants[0].variant_value);
-      }
-      if (sizeVariants.length > 0) {
-        setSelectedSize(sizeVariants[0].variant_value);
-      }
-      
-      // Load related products
-      const related = await getRelatedProducts(productData.id, productData.category_id || '', 4);
+
+      if (colorVariants.length > 0) setSelectedColor(colorVariants[0].variant_value);
+      if (sizeVariants.length > 0) setSelectedSize(sizeVariants[0].variant_value);
+
+      const related = await getRelatedProducts(productData.id, productData.category_id || '', 3);
       setRelatedProducts(related);
     }
-    
     setIsLoading(false);
   };
 
   if (isLoading) {
     return (
-      <main className="pt-24 min-h-screen flex items-center justify-center">
-        <div className="animate-spin w-12 h-12 border-4 border-[#005EE9] border-t-transparent rounded-full" />
-      </main>
+      <div className="min-h-[60vh] flex items-center justify-center">
+        <div className="animate-spin w-8 h-8 border-4 border-[#005EE9] border-t-transparent rounded-full"></div>
+      </div>
     );
   }
 
-  if (!product) {
-    return <Navigate to="/shop" />;
-  }
+  if (!product) return <Navigate to="/shop" replace />;
 
   const formatPrice = (price: number) => `R${price?.toLocaleString() || 0}`;
+
+  const getPriceDisplay = () => {
+    const sizeVariants = product.variants?.filter(v => v.variant_type === 'size') || [];
+    if (sizeVariants.length > 0) {
+      const adjustments = sizeVariants.map(v => v.price_adjustment || 0);
+      const minAdj = Math.min(...adjustments);
+      const maxAdj = Math.max(...adjustments);
+      const basePrice = product.price || 0;
+      if (minAdj !== maxAdj) {
+        const low = basePrice + minAdj;
+        const high = basePrice + maxAdj;
+        return `R${low.toLocaleString()} – R${high.toLocaleString()}`;
+      }
+    }
+    if (product.original_price) {
+      return null;
+    }
+    return formatPrice(product.price);
+  };
 
   const handleAddToCart = () => {
     addToCart(product as any, quantity, selectedColor, selectedSize);
@@ -72,69 +79,70 @@ export default function ProductDetail() {
     setTimeout(() => setAddedToCart(false), 2000);
   };
 
-  const renderStars = (rating: number) => {
-    return (
-      <div className="flex items-center gap-0.5">
-        {[...Array(5)].map((_, i) => (
-          <Star
-            key={i}
-            className={`w-4 h-4 ${
-              i < Math.round(rating || 0) ? 'fill-[#FDA256] text-[#FDA256]' : 'text-gray-300'
-            }`}
-          />
-        ))}
-      </div>
-    );
+  const handleEnquire = () => {
+    const phone = '27000000000';
+    const msg = encodeURIComponent(`Hi, I'd like more info about: ${product.name}`);
+    window.open(`https://wa.me/${phone}?text=${msg}`, '_blank');
   };
 
-  // Get images
-  const images = (product.images && product.images.length > 0)
-    ? product.images.map(img => img.image_url)
+  const renderStars = (rating: number) => (
+    <div className="flex gap-0.5">
+      {[...Array(5)].map((_, i) => (
+        <Star
+          key={i}
+          className={`w-4 h-4 ${i < Math.round(rating || 0) ? 'fill-[#FDA256] text-[#FDA256]' : 'text-gray-300'}`}
+        />
+      ))}
+    </div>
+  );
+
+  const galleryImages = (product.images && product.images.length > 0)
+    ? product.images.filter(img => !img.show_in_description).map(img => img.image_url)
+    : [];
+  const images = galleryImages.length > 0
+    ? galleryImages
     : [product.primary_image || 'https://via.placeholder.com/600'];
 
-  // Get variants
+  const descriptionImages = (product.images && product.images.length > 0)
+    ? product.images.filter(img => img.show_in_description)
+    : [];
+
   const colorVariants = product.variants?.filter(v => v.variant_type === 'color') || [];
   const sizeVariants = product.variants?.filter(v => v.variant_type === 'size') || [];
 
-  const nextImage = () => {
-    setSelectedImage((prev) => (prev + 1) % images.length);
-  };
+  const nextImage = () => setSelectedImage((prev) => (prev + 1) % images.length);
+  const prevImage = () => setSelectedImage((prev) => (prev - 1 + images.length) % images.length);
 
-  const prevImage = () => {
-    setSelectedImage((prev) => (prev - 1 + images.length) % images.length);
+  const priceDisplay = getPriceDisplay();
+
+  // Render description with proper formatting (supports HTML, paragraphs, lists, line breaks)
+  const renderDescription = () => {
+    const desc = product.description || product.short_description || '';
+    // Check if content contains HTML tags
+    if (/<[a-z][\s\S]*>/i.test(desc)) {
+      return <div className="description-content" dangerouslySetInnerHTML={{ __html: desc }} />;
+    }
+    // Fallback: preserve newlines and render as paragraphs
+    return desc.split('\n').filter(Boolean).map((paragraph, idx) => (
+      <p key={idx} className="mb-4 last:mb-0">{paragraph}</p>
+    ));
   };
 
   return (
-    <main className="pt-24 min-h-screen">
-      <div className="container-custom py-12">
-        {/* Breadcrumb */}
-        <nav className="flex items-center gap-2 text-sm text-gray-500 mb-8">
-          <Link to="/" className="hover:text-[#005EE9]">Home</Link>
-          <span>/</span>
-          {product.category_slug && (
-            <>
-              <Link to={`/category/${product.category_slug}`} className="hover:text-[#005EE9]">
-                {product.category_name}
-              </Link>
-              <span>/</span>
-            </>
-          )}
-          <span className="text-[#0F172A] truncate max-w-[200px]">{product.name}</span>
-        </nav>
-
+    <main className="pt-8 pb-20 px-4 md:px-0">
+      <div className="container-custom">
         {/* Product Details */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-16">
           {/* Image Gallery */}
           <div className="space-y-4">
             {/* Main Image */}
-            <div className="relative aspect-square bg-gray-100 rounded-lg overflow-hidden">
+            <div className="relative aspect-square bg-white overflow-hidden">
               <img
                 src={images[selectedImage]}
                 alt={product.name}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-contain"
               />
-              
-              {/* Navigation Arrows */}
+
               {images.length > 1 && (
                 <>
                   <button
@@ -151,24 +159,17 @@ export default function ProductDetail() {
                   </button>
                 </>
               )}
-              
-              {/* Image Counter */}
-              {images.length > 1 && (
-                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/50 text-white px-3 py-1 rounded-full text-sm">
-                  {selectedImage + 1} / {images.length}
-                </div>
-              )}
             </div>
-            
-            {/* Thumbnail Gallery */}
+
+            {/* Thumbnail Strip - NO borders */}
             {images.length > 1 && (
-              <div className="flex gap-2 overflow-x-auto pb-2">
+              <div className="flex flex-wrap gap-3">
                 {images.map((img, index) => (
                   <button
                     key={index}
                     onClick={() => setSelectedImage(index)}
-                    className={`flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 transition-colors ${
-                      selectedImage === index ? 'border-[#005EE9]' : 'border-transparent hover:border-gray-300'
+                    className={`flex-shrink-0 w-[80px] h-[80px] overflow-hidden transition-all ${
+                      selectedImage === index ? 'ring-2 ring-[#0F172A]' : 'opacity-70 hover:opacity-100'
                     }`}
                   >
                     <img
@@ -184,24 +185,17 @@ export default function ProductDetail() {
 
           {/* Product Info */}
           <div>
-            {/* Categories */}
-            <div className="flex flex-wrap gap-2 mb-3">
-              {product.category_name && (
-                <Link 
-                  to={`/category/${product.category_slug}`}
-                  className="text-sm text-[#005EE9] hover:underline"
-                >
-                  {product.category_name}
-                </Link>
-              )}
-            </div>
+            {/* Category label */}
+            {product.category_name && (
+              <p className="text-sm uppercase tracking-widest text-gray-500 mb-2">
+                {product.category_name}
+              </p>
+            )}
 
-            {/* Title */}
             <h1 className="text-2xl lg:text-3xl font-serif text-[#0F172A] mb-3">
               {product.name}
             </h1>
 
-            {/* Rating */}
             {product.rating > 0 && (
               <div className="flex items-center gap-2 mb-4">
                 {renderStars(product.rating)}
@@ -213,34 +207,46 @@ export default function ProductDetail() {
 
             {/* Price */}
             <div className="flex items-center gap-3 mb-6">
-              {product.original_price && (
-                <span className="text-xl text-gray-400 line-through">
-                  {formatPrice(product.original_price)}
-                </span>
-              )}
-              <span className="text-2xl font-semibold text-[#0F172A]">
-                {formatPrice(product.price)}
-              </span>
-              <span className="text-sm text-green-600">+ Free Delivery</span>
+              <span className="text-2xl font-semibold text-[#0F172A]">{priceDisplay}</span>
+              <span className="text-sm text-green-600 font-medium">+ Free Delivery</span>
             </div>
 
-            {/* Description */}
             <p className="text-[#364151] leading-relaxed mb-6">
               {product.short_description || product.description}
             </p>
 
-            {/* Color Variants */}
+            {/* Size Variants */}
+            {sizeVariants.length > 0 && (
+              <div className="mb-6">
+                <label className="block text-sm font-semibold text-[#0F172A] mb-3">Size</label>
+                <div className="flex flex-wrap gap-2">
+                  {sizeVariants.map((variant) => (
+                    <button
+                      key={variant.id}
+                      onClick={() => setSelectedSize(variant.variant_value)}
+                      className={`px-4 py-2 border rounded text-sm transition-all ${
+                        selectedSize === variant.variant_value
+                          ? 'border-[#0F172A] bg-white text-[#0F172A] font-medium'
+                          : 'border-gray-300 hover:border-[#0F172A] text-gray-600'
+                      }`}
+                    >
+                      {variant.variant_name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Color Variants - SQUARE */}
             {colorVariants.length > 0 && (
               <div className="mb-6">
-                <label className="block text-sm font-medium text-[#0F172A] mb-2">
-                  Color
-                </label>
-                <div className="flex gap-2">
+                <label className="block text-sm font-semibold text-[#0F172A] mb-3">Color</label>
+                <div className="flex gap-3">
                   {colorVariants.map((variant) => (
                     <button
                       key={variant.id}
                       onClick={() => setSelectedColor(variant.variant_value)}
-                      className={`w-10 h-10 rounded border-2 transition-all ${
+                      className={`w-10 h-10 border-2 transition-all ${
                         selectedColor === variant.variant_value
                           ? 'border-[#0F172A] ring-2 ring-[#005EE9] ring-offset-2'
                           : 'border-gray-200 hover:border-gray-400'
@@ -258,130 +264,151 @@ export default function ProductDetail() {
               </div>
             )}
 
-            {/* Size Variants */}
-            {sizeVariants.length > 0 && (
-              <div className="mb-6">
-                <label className="block text-sm font-medium text-[#0F172A] mb-2">
-                  Size
-                </label>
-                <div className="flex flex-wrap gap-2">
-                  {sizeVariants.map((variant) => (
-                    <button
-                      key={variant.id}
-                      onClick={() => setSelectedSize(variant.variant_value)}
-                      className={`px-4 py-2 border rounded text-sm transition-all ${
-                        selectedSize === variant.variant_value
-                          ? 'border-[#005EE9] bg-[#005EE9] text-white'
-                          : 'border-gray-200 hover:border-[#005EE9]'
-                      }`}
-                    >
-                      {variant.variant_name}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Quantity and Add to Cart */}
-            <div className="flex flex-wrap items-center gap-4 mb-8">
-              <div className="flex items-center border rounded">
+            {/* Quantity + Add to Cart - BLUE button */}
+            <div className="flex flex-wrap items-center gap-3 mb-4">
+              <div className="flex items-center border border-gray-300 rounded">
                 <button
                   onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                  className="p-3 hover:bg-gray-100 transition-colors"
+                  className="p-2.5 hover:bg-gray-100 transition-colors"
                 >
                   <Minus className="w-4 h-4" />
                 </button>
-                <span className="px-4 font-medium">{quantity}</span>
+                <span className="px-5 font-medium">{quantity}</span>
                 <button
                   onClick={() => setQuantity(quantity + 1)}
-                  className="p-3 hover:bg-gray-100 transition-colors"
+                  className="p-2.5 hover:bg-gray-100 transition-colors"
                 >
                   <Plus className="w-4 h-4" />
                 </button>
               </div>
-              
+
+              {/* FIXED: Blue Add to Cart button */}
               <button
                 onClick={handleAddToCart}
-                className={`flex-1 min-w-[200px] py-3 px-6 font-medium transition-all ${
+                className={`px-6 py-2.5 font-medium transition-all ${
                   addedToCart
                     ? 'bg-green-600 text-white'
-                    : 'bg-[#005EE9] text-white hover:bg-[#0F172A]'
+                    : 'bg-[#005EE9] text-white hover:bg-[#0047c0]'
                 }`}
               >
                 {addedToCart ? (
                   <span className="flex items-center justify-center gap-2">
-                    <Check className="w-5 h-5" />
-                    Added to Cart
+                    <Check className="w-4 h-4" /> Added
                   </span>
-                ) : (
-                  'Add to Cart'
-                )}
+                ) : 'Add To Cart'}
               </button>
             </div>
 
-            {/* Features */}
-            <div className="grid grid-cols-3 gap-4 py-6 border-t border-b">
-              <div className="text-center">
-                <Truck className="w-6 h-6 mx-auto mb-2 text-[#005EE9]" />
-                <p className="text-xs text-gray-600">Free Delivery</p>
-              </div>
-              <div className="text-center">
-                <Shield className="w-6 h-6 mx-auto mb-2 text-[#005EE9]" />
-                <p className="text-xs text-gray-600">2 Year Warranty</p>
-              </div>
-              <div className="text-center">
-                <RotateCcw className="w-6 h-6 mx-auto mb-2 text-[#005EE9]" />
-                <p className="text-xs text-gray-600">30 Day Returns</p>
-              </div>
+            {/* SKU & Category row */}
+            <div className="flex items-center gap-4 text-sm text-gray-500 mb-4 pt-4 border-t border-gray-200">
+              <span>SKU: {product.sku || 'N/A'}</span>
+              {product.category_name && (
+                <span>Category: <span className="text-[#0F172A] uppercase font-medium">{product.category_name}</span></span>
+              )}
             </div>
 
-            {/* Categories */}
-            <div className="mt-6">
-              <p className="text-sm text-gray-500">
-                Categories:{' '}
-                {product.category_name && (
-                  <Link to={`/category/${product.category_slug}`} className="text-[#005EE9] hover:underline">
-                    {product.category_name}
-                  </Link>
-                )}
-              </p>
-            </div>
+            {/* Enquire Now - FIXED: Two lines of text */}
+            <button
+              onClick={handleEnquire}
+              className="flex items-center gap-2 bg-[#005EE9] text-white px-5 py-2.5 text-sm font-medium hover:bg-[#0047c0] transition-colors"
+            >
+              <MessageCircle className="w-4 h-4 flex-shrink-0" />
+              <div className="text-left leading-tight">
+                <span className="block">Need More Info?</span>
+                <span className="block">Enquire Now</span>
+              </div>
+            </button>
           </div>
         </div>
 
         {/* Tabs */}
         <div className="mb-16">
-          <div className="flex border-b mb-6">
-            <button
-              onClick={() => setActiveTab('description')}
-              className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors ${
-                activeTab === 'description'
-                  ? 'border-[#005EE9] text-[#005EE9]'
-                  : 'border-transparent text-gray-500 hover:text-[#0F172A]'
-              }`}
-            >
-              Description
-            </button>
-            <button
-              onClick={() => setActiveTab('reviews')}
-              className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors ${
-                activeTab === 'reviews'
-                  ? 'border-[#005EE9] text-[#005EE9]'
-                  : 'border-transparent text-gray-500 hover:text-[#0F172A]'
-              }`}
-            >
-              Reviews ({product.review_count || 0})
-            </button>
+          <div className="flex border-b border-gray-200 mb-8">
+            {(['description', 'additional', 'reviews'] as const).map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors capitalize ${
+                  activeTab === tab
+                    ? 'border-[#0F172A] text-[#0F172A]'
+                    : 'border-transparent text-gray-500 hover:text-[#0F172A]'
+                }`}
+              >
+                {tab === 'reviews'
+                  ? `Reviews (${product.review_count || 0})`
+                  : tab === 'additional'
+                  ? 'Additional Information'
+                  : 'Description'}
+              </button>
+            ))}
           </div>
 
-          <div className="prose max-w-none">
-            {activeTab === 'description' ? (
-              <div className="text-[#364151] leading-relaxed">
-                <p className="mb-4">{product.description}</p>
+          <div>
+            {activeTab === 'description' && (
+              <div className="text-[#364151] leading-relaxed max-w-4xl">
+                {/* FIXED: Description now renders paragraphs, lists, and HTML properly */}
+                {renderDescription()}
+
+                {/* Description images */}
+                {descriptionImages.length > 0 && (
+                  <div className={`grid gap-4 mt-8 ${
+                    descriptionImages.length === 1
+                      ? 'grid-cols-1 max-w-2xl'
+                      : descriptionImages.length === 2
+                      ? 'grid-cols-2'
+                      : descriptionImages.length === 3
+                      ? 'grid-cols-3'
+                      : 'grid-cols-2 sm:grid-cols-4'
+                  }`}>
+                    {descriptionImages.map((img, index) => (
+                      <div
+                        key={img.id}
+                        className={`overflow-hidden bg-gray-100 ${
+                          descriptionImages.length === 1 ? 'aspect-video' : 'aspect-square'
+                        }`}
+                      >
+                        <img
+                          src={img.image_url}
+                          alt={img.alt_text || `${product.name} detail ${index + 1}`}
+                          className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
-            ) : (
+            )}
+
+            {activeTab === 'additional' && (
+              <div className="text-[#364151] max-w-2xl">
+                <table className="w-full text-sm">
+                  <tbody className="divide-y divide-gray-100">
+                    {sizeVariants.length > 0 && (
+                      <tr>
+                        <td className="py-3 pr-6 font-medium text-[#0F172A] w-40">Available Sizes</td>
+                        <td className="py-3 text-gray-600">{sizeVariants.map(v => v.variant_name).join(', ')}</td>
+                      </tr>
+                    )}
+                    {colorVariants.length > 0 && (
+                      <tr>
+                        <td className="py-3 pr-6 font-medium text-[#0F172A] w-40">Available Colors</td>
+                        <td className="py-3 text-gray-600">{colorVariants.map(v => v.variant_name).join(', ')}</td>
+                      </tr>
+                    )}
+                    {product.sku && (
+                      <tr>
+                        <td className="py-3 pr-6 font-medium text-[#0F172A]">SKU</td>
+                        <td className="py-3 text-gray-600">{product.sku}</td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            )}
+
+            {activeTab === 'reviews' && (
               <div className="text-center py-12">
-                <p className="text-gray-500 mb-4">No reviews yet</p>
+                <p className="text-gray-500 mb-2">No reviews yet</p>
                 <p className="text-sm text-gray-400">Be the first to review this product!</p>
               </div>
             )}
@@ -391,8 +418,8 @@ export default function ProductDetail() {
         {/* Related Products */}
         {relatedProducts.length > 0 && (
           <div>
-            <h2 className="section-title mb-8">Related Products</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <h2 className="section-title mb-8">Related products</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {relatedProducts.map((p) => (
                 <ProductCard key={p.id} product={p} />
               ))}

@@ -9,7 +9,7 @@ export default function TermsOfService() {
         <div className="max-w-3xl mx-auto space-y-10 text-[#364151]">
           <section>
             <p className="leading-relaxed mb-4">
-              Welcome to Home & Living Furniture&apos;s. By accessing or using our website and services, you agree to be bound by these Terms of Service. Please read them carefully before making a purchase.
+              Welcome to homecraft & Living Furniture&apos;s. By accessing or using our website and services, you agree to be bound by these Terms of Service. Please read them carefully before making a purchase.
             </p>
             <p className="text-sm text-gray-500">
               Last updated: January 2025
@@ -88,7 +88,7 @@ export default function TermsOfService() {
           <section>
             <h2 className="text-xl font-medium text-[#0F172A] mb-4">7. Limitation of Liability</h2>
             <p className="leading-relaxed">
-              To the maximum extent permitted by law, Home & Living Furniture&apos;s shall not be liable for any indirect, incidental, special, consequential, or punitive damages arising from your use of our services or products.
+              To the maximum extent permitted by law, homecraft & Living Furniture&apos;s shall not be liable for any indirect, incidental, special, consequential, or punitive damages arising from your use of our services or products.
             </p>
           </section>
 
@@ -110,8 +110,8 @@ export default function TermsOfService() {
             <h2 className="text-xl font-medium text-[#0F172A] mb-4">10. Contact Us</h2>
             <p className="leading-relaxed">
               If you have any questions about these Terms of Service, please contact us at{' '}
-              <a href="mailto:orders@homeandlivingfurnitures.com" className="text-[#005EE9] hover:underline">
-                orders@homeandlivingfurnitures.com
+              <a href="mailto:orders@homecraftandliving.com" className="text-[#005EE9] hover:underline">
+                orders@homecraftandliving.com
               </a>
             </p>
           </section>

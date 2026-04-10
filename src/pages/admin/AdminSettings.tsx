@@ -144,7 +144,7 @@ export default function AdminSettings() {
                 value={settings.whatsapp_number || ''}
                 onChange={(e) => handleChange('whatsapp_number', e.target.value)}
                 className="w-full px-4 py-2 border border-gray-200 rounded-lg outline-none focus:border-[#005EE9]"
-                placeholder="27835829819"
+                placeholder="27635193251"
               />
             </div>
           </div>

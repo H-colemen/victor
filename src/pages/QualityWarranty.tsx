@@ -16,7 +16,7 @@ export default function QualityWarranty() {
             </div>
             <h2 className="text-2xl font-medium text-[#0F172A] mb-3">2-Year Warranty</h2>
             <p className="text-[#364151] leading-relaxed">
-              All Home & Living Furniture&apos;s products come with a comprehensive 2-year warranty against manufacturing defects. We stand behind the quality of our furniture.
+              All homecraft & Living Furniture&apos;s products come with a comprehensive 2-year warranty against manufacturing defects. We stand behind the quality of our furniture.
             </p>
           </section>
 
@@ -88,8 +88,8 @@ export default function QualityWarranty() {
               <ol className="list-decimal pl-5 space-y-3 text-[#364151]">
                 <li>
                   <strong>Contact us</strong> within the warranty period at{' '}
-                  <a href="mailto:orders@homeandlivingfurnitures.com" className="text-[#005EE9] hover:underline">
-                    orders@homeandlivingfurnitures.com
+                  <a href="mailto:orders@homecraftandliving.com" className="text-[#005EE9] hover:underline">
+                    orders@homecraftandliving.com
                   </a>{' '}
                   or WhatsApp +27 83 582 9819
                 </li>
@@ -110,7 +110,7 @@ export default function QualityWarranty() {
           <section className="bg-[#0F172A] p-8 rounded-lg text-white">
             <h2 className="text-xl font-medium mb-4">Our Quality Promise</h2>
             <p className="text-white/80 leading-relaxed mb-6">
-              At Home & Living Furniture&apos;s, quality is our top priority. Every piece in our collection is carefully selected and inspected to ensure it meets our high standards.
+              At homecraft & Living Furniture&apos;s, quality is our top priority. Every piece in our collection is carefully selected and inspected to ensure it meets our high standards.
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
               <div className="text-center">

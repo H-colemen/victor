@@ -49,7 +49,7 @@ export default function CartDrawer() {
               <div className="flex flex-col items-center justify-center h-full text-center">
                 <ShoppingBag className="w-16 h-16 text-gray-300 mb-4" />
                 <p className="text-lg text-gray-500 mb-2">Your cart is empty</p>
-                <p className="text-sm text-gray-400 mb-6">Looks like you haven&apos;t added anything yet</p>
+                <p className="text-sm text-gray-400 mb-6">Looks like you home&apos;t added anything yet</p>
                 <Link
                   to="/shop"
                   onClick={() => setIsOpen(false)}

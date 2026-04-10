@@ -1,10 +1,5 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { CartProvider } from '@/context/CartContext';
-import Header from '@/components/layout/Header';
-import Footer from '@/components/layout/Footer';
-import CartDrawer from '@/components/layout/CartDrawer';
-import WhatsAppButton from '@/components/ui-custom/WhatsAppButton';
-import ContactWidget from '@/components/ui-custom/ContactWidget';
 
 // Public Pages
 import Home from '@/pages/Home';
@@ -23,6 +18,10 @@ import TermsOfService from '@/pages/TermsOfService';
 import FAQ from '@/pages/FAQ';
 import QualityWarranty from '@/pages/QualityWarranty';
 
+// Layout
+import PublicLayout from '@/components/layout/PublicLayout';
+import ScrollToTop from '@/components/ScrollToTop';
+
 // Admin Pages
 import AdminLogin from '@/pages/admin/AdminLogin';
 import AdminLayout from '@/pages/admin/AdminLayout';
@@ -36,9 +35,10 @@ import AdminSettings from '@/pages/admin/AdminSettings';
 function App() {
   return (
     <CartProvider>
-      <Router>
+      <Router basename="/">
+        <ScrollToTop />
         <Routes>
-          {/* Admin Routes */}
+          {/* Admin Routes — no PublicLayout */}
           <Route path="/admin/login" element={<AdminLogin />} />
           <Route path="/admin" element={<AdminLayout />}>
             <Route index element={<AdminDashboard />} />
@@ -50,39 +50,24 @@ function App() {
             <Route path="settings" element={<AdminSettings />} />
           </Route>
 
-          {/* Public Routes */}
-          <Route path="*" element={
-            <div className="min-h-screen flex flex-col">
-              <Header />
-              <CartDrawer />
-              <div className="flex-1">
-                <Routes>
-                  <Route path="/" element={<Home />} />
-                  <Route path="/shop" element={<Shop />} />
-                  <Route path="/product/:id" element={<ProductDetail />} />
-                  <Route path="/cart" element={<Cart />} />
-                  <Route path="/checkout" element={<Checkout />} />
-                  <Route path="/about" element={<About />} />
-                  <Route path="/contact" element={<Contact />} />
-                  <Route path="/category/:category" element={<Category />} />
-                  <Route path="/category/:category/:subcategory" element={<Category />} />
-                  
-                  {/* Policy Pages */}
-                  <Route path="/shipping-policies" element={<ShippingPolicies />} />
-                  <Route path="/returns-refunds-policy" element={<ReturnsPolicy />} />
-                  <Route path="/terms-of-service" element={<TermsOfService />} />
-                  <Route path="/frequently-asked-questions" element={<FAQ />} />
-                  <Route path="/quality-warranty" element={<QualityWarranty />} />
-                  
-                  {/* Fallback */}
-                  <Route path="*" element={<Home />} />
-                </Routes>
-              </div>
-              <Footer />
-              <WhatsAppButton />
-              <ContactWidget />
-            </div>
-          } />
+          {/* Public routes wrapped in PublicLayout */}
+          <Route path="/" element={<PublicLayout><Home /></PublicLayout>} />
+          <Route path="/shop" element={<PublicLayout><Shop /></PublicLayout>} />
+          <Route path="/product/:id" element={<PublicLayout><ProductDetail /></PublicLayout>} />
+          <Route path="/cart" element={<PublicLayout><Cart /></PublicLayout>} />
+          <Route path="/checkout" element={<PublicLayout><Checkout /></PublicLayout>} />
+          <Route path="/about" element={<PublicLayout><About /></PublicLayout>} />
+          <Route path="/contact" element={<PublicLayout><Contact /></PublicLayout>} />
+          <Route path="/category/:category" element={<PublicLayout><Category /></PublicLayout>} />
+          <Route path="/category/:category/:subcategory" element={<PublicLayout><Category /></PublicLayout>} />
+          <Route path="/shipping-policies" element={<PublicLayout><ShippingPolicies /></PublicLayout>} />
+          <Route path="/returns-refunds-policy" element={<PublicLayout><ReturnsPolicy /></PublicLayout>} />
+          <Route path="/terms-of-service" element={<PublicLayout><TermsOfService /></PublicLayout>} />
+          <Route path="/frequently-asked-questions" element={<PublicLayout><FAQ /></PublicLayout>} />
+          <Route path="/quality-warranty" element={<PublicLayout><QualityWarranty /></PublicLayout>} />
+
+          {/* Catch-all route to redirect back to Home if a page isn't found */}
+          <Route path="*" element={<PublicLayout><Home /></PublicLayout>} />
         </Routes>
       </Router>
     </CartProvider>

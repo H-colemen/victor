@@ -30,20 +30,20 @@ export default function Contact() {
     {
       icon: Mail,
       title: 'Email',
-      content: 'orders@homeandlivingfurnitures.com',
-      href: 'mailto:orders@homeandlivingfurnitures.com',
+      content: 'orders@homecraftandliving.com',
+      href: 'mailto:orders@homecraftandliving.com',
     },
     {
       icon: Phone,
       title: 'Phone',
       content: '+27 83 582 9819',
-      href: 'tel:+27835829819',
+      href: 'tel:+27635193251',
     },
     {
       icon: MapPin,
-      title: 'Location',
-      content: 'South Africa',
-      href: '#',
+      title: 'Address',
+      content: '30 Hertzog Boulevard, Cape Town, 8001, ZAF',
+      href: 'https://www.google.com/maps/search/?api=1&query=30+Hertzog+Boulevard,+Cape+Town,+8001,+ZAF',
     },
     {
       icon: Clock,
@@ -201,7 +201,7 @@ export default function Contact() {
               <div className="aspect-[4/3] bg-gray-100 rounded-lg overflow-hidden mb-6">
                 <img
                   src="https://images.unsplash.com/photo-1493663284031-b7e3aefcae8e?w=800&q=80"
-                  alt="Contact Home and Living Furniture's"
+                  alt="Contact homecraft & Living Furniture's"
                   className="w-full h-full object-cover"
                 />
               </div>
@@ -230,7 +230,7 @@ export default function Contact() {
             Chat with us directly on WhatsApp for quick responses and personalized assistance.
           </p>
           <a
-            href="https://wa.me/27835829819"
+            href="https://wa.me/27635193251"
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-3 bg-[#25D366] text-white px-8 py-4 rounded-full font-medium hover:bg-[#128C7E] transition-colors"

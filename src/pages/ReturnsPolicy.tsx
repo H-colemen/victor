@@ -15,7 +15,7 @@ export default function ReturnsPolicy() {
               <h2 className="text-xl font-medium text-[#0F172A]">Our Returns Promise</h2>
             </div>
             <p className="text-[#364151] leading-relaxed mb-4">
-              At Home & Living Furniture&apos;s, we want you to be completely satisfied with your purchase. If you&apos;re not happy with your order, we offer a hassle-free returns process within 30 days of delivery.
+              At homecraft & Living Furniture&apos;s, we want you to be completely satisfied with your purchase. If you&apos;re not happy with your order, we offer a hassle-free returns process within 30 days of delivery.
             </p>
             <div className="bg-green-50 border border-green-200 p-4 rounded-lg">
               <p className="text-green-800 font-medium">30-Day Money-Back Guarantee</p>
@@ -68,8 +68,8 @@ export default function ReturnsPolicy() {
               <ol className="list-decimal pl-5 space-y-3">
                 <li>
                   <strong>Contact us</strong> within 30 days of delivery at{' '}
-                  <a href="mailto:orders@homeandlivingfurnitures.com" className="text-[#005EE9] hover:underline">
-                    orders@homeandlivingfurnitures.com
+                  <a href="mailto:orders@homecraftandliving.com" className="text-[#005EE9] hover:underline">
+                    orders@homecraftandliving.com
                   </a>{' '}
                   or WhatsApp +27 83 582 9819
                 </li>
@@ -108,8 +108,8 @@ export default function ReturnsPolicy() {
             <h2 className="text-lg font-medium text-[#0F172A] mb-3">Need Help?</h2>
             <p className="text-[#364151] text-sm">
               If you have any questions about our returns policy, please contact us at{' '}
-              <a href="mailto:orders@homeandlivingfurnitures.com" className="text-[#005EE9] hover:underline">
-                orders@homeandlivingfurnitures.com
+              <a href="mailto:orders@homecraftandliving.com" className="text-[#005EE9] hover:underline">
+                orders@homecraftandliving.com
               </a>{' '}
               or WhatsApp us at +27 83 582 9819
             </p>

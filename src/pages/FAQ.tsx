@@ -152,10 +152,10 @@ export default function FAQ() {
               Can&apos;t find the answer you&apos;re looking for? Please contact our support team.
             </p>
             <a
-              href="mailto:orders@homeandlivingfurnitures.com"
+              href="mailto:orders@homecraftandliving.com"
               className="inline-block text-[#005EE9] hover:underline"
             >
-              orders@homeandlivingfurnitures.com
+              orders@homecraftandliving.com
             </a>
           </div>
         </div>

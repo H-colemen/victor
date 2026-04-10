@@ -13,6 +13,7 @@ import {
   X
 } from 'lucide-react';
 import { useState } from 'react';
+import { supabase } from '@/lib/supabase';
 
 const navItems = [
   { path: '/admin', label: 'Dashboard', icon: LayoutDashboard },
@@ -30,14 +31,25 @@ export default function AdminLayout() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
-    const token = localStorage.getItem('admin_token');
-    if (!token) {
-      navigate('/admin/login');
-    }
+    // Check for an active Supabase Auth session instead of localStorage token
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!session) {
+        navigate('/admin/login');
+      }
+    });
+
+    // Also listen for session changes (e.g. token expiry)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!session) {
+        navigate('/admin/login');
+      }
+    });
+
+    return () => subscription.unsubscribe();
   }, [navigate]);
 
-  const handleLogout = () => {
-    localStorage.removeItem('admin_token');
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
     navigate('/admin/login');
   };
 
@@ -66,7 +78,7 @@ export default function AdminLayout() {
               {isSidebarOpen && (
                 <div className="overflow-hidden">
                   <p className="font-medium whitespace-nowrap">Admin Panel</p>
-                  <p className="text-xs text-white/50 whitespace-nowrap">Home & Living</p>
+                  <p className="text-xs text-white/50 whitespace-nowrap">homecraft & Living</p>
                 </div>
               )}
             </Link>

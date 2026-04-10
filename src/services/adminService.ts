@@ -3,32 +3,38 @@ import type { Product, ProductImage, ProductVariant, Category, HeroSlide, Testim
 
 // ==================== ADMIN AUTH ====================
 
-export async function adminLogin(email: string, _password: string): Promise<{ user: any | null; error: string | null }> {
-  // For admin login, we'll use a custom approach since Supabase Auth is separate
-  // In production, you'd use Supabase Auth with proper role-based access
-  
-  const { data, error } = await supabase
+export async function adminLogin(email: string, password: string): Promise<{ user: any | null; error: string | null }> {
+  // Sign in via Supabase Auth — this sets a real session so auth.uid() works in RLS
+  const { data, error: authError } = await supabase.auth.signInWithPassword({ email, password });
+
+  if (authError || !data.session) {
+    return { user: null, error: 'Invalid credentials' };
+  }
+
+  // Verify the authenticated user is an active admin
+  const { data: adminUser, error: adminError } = await supabase
     .from('admin_users')
-    .select('*')
+    .select('id, email, role')
     .eq('email', email)
     .eq('is_active', true)
     .single();
 
-  if (error || !data) {
-    return { user: null, error: 'Invalid credentials' };
+  if (adminError || !adminUser) {
+    await supabase.auth.signOut();
+    return { user: null, error: 'Access denied. Not an admin account.' };
   }
 
-  // In a real app, you'd verify the password hash here
-  // For now, we'll use a simple comparison (NOT FOR PRODUCTION)
-  // const isValid = await bcrypt.compare(password, data.password_hash);
-  
-  // Update last login
+  // Update last login timestamp
   await supabase
     .from('admin_users')
     .update({ last_login_at: new Date().toISOString() })
-    .eq('id', data.id);
+    .eq('id', adminUser.id);
 
-  return { user: { id: data.id, email: data.email, role: data.role }, error: null };
+  return { user: { id: adminUser.id, email: adminUser.email, role: adminUser.role }, error: null };
+}
+
+export async function adminLogout(): Promise<void> {
+  await supabase.auth.signOut();
 }
 
 // ==================== PRODUCT MANAGEMENT ====================
@@ -65,7 +71,6 @@ export async function updateProduct(id: string, product: Partial<Product>): Prom
 }
 
 export async function deleteProduct(id: string): Promise<boolean> {
-  // Delete associated images from storage first
   const { data: images } = await supabase
     .from('product_images')
     .select('image_url')
@@ -75,9 +80,7 @@ export async function deleteProduct(id: string): Promise<boolean> {
     for (const img of images) {
       try {
         const path = img.image_url.split('/').pop();
-        if (path) {
-          await deleteImage('product-images', path);
-        }
+        if (path) await deleteImage('product-images', path);
       } catch (e) {
         console.error('Error deleting image:', e);
       }
@@ -122,28 +125,29 @@ export async function getAllProducts(): Promise<Product[]> {
 
 // ==================== PRODUCT IMAGES ====================
 
-export async function addProductImage(productId: string, file: File, isPrimary: boolean = false): Promise<{ image: ProductImage | null; error: string | null }> {
+export async function addProductImage(
+  productId: string,
+  file: File,
+  isPrimary: boolean = false,
+  showInDescription: boolean = false
+): Promise<{ image: ProductImage | null; error: string | null }> {
   try {
-    // Upload image to storage
     const path = `${productId}/${Date.now()}-${file.name}`;
     const imageUrl = await uploadImage(file, 'product-images', path);
 
-    // Add to database
     const { data, error } = await supabase
       .from('product_images')
       .insert({
         product_id: productId,
         image_url: imageUrl,
         is_primary: isPrimary,
+        show_in_description: showInDescription,
         alt_text: file.name,
       })
       .select()
       .single();
 
-    if (error) {
-      return { image: null, error: error.message };
-    }
-
+    if (error) return { image: null, error: error.message };
     return { image: data, error: null };
   } catch (error: any) {
     return { image: null, error: error.message };
@@ -152,13 +156,9 @@ export async function addProductImage(productId: string, file: File, isPrimary: 
 
 export async function deleteProductImage(imageId: string, imageUrl: string): Promise<boolean> {
   try {
-    // Delete from storage
     const path = imageUrl.split('/').pop();
-    if (path) {
-      await deleteImage('product-images', path);
-    }
+    if (path) await deleteImage('product-images', path);
 
-    // Delete from database
     const { error } = await supabase
       .from('product_images')
       .delete()
@@ -177,13 +177,11 @@ export async function deleteProductImage(imageId: string, imageUrl: string): Pro
 }
 
 export async function setPrimaryImage(imageId: string, productId: string): Promise<boolean> {
-  // First, unset all primary images for this product
   await supabase
     .from('product_images')
     .update({ is_primary: false })
     .eq('product_id', productId);
 
-  // Then set the new primary
   const { error } = await supabase
     .from('product_images')
     .update({ is_primary: true })
@@ -206,10 +204,7 @@ export async function addProductVariant(variant: Partial<ProductVariant>): Promi
     .select()
     .single();
 
-  if (error) {
-    return { variant: null, error: error.message };
-  }
-
+  if (error) return { variant: null, error: error.message };
   return { variant: data, error: null };
 }
 
@@ -250,10 +245,7 @@ export async function createCategory(category: Partial<Category>): Promise<{ cat
     .select()
     .single();
 
-  if (error) {
-    return { category: null, error: error.message };
-  }
-
+  if (error) return { category: null, error: error.message };
   return { category: data, error: null };
 }
 
@@ -319,10 +311,7 @@ export async function createHeroSlide(slide: Partial<HeroSlide>, file?: File): P
     .select()
     .single();
 
-  if (error) {
-    return { slide: null, error: error.message };
-  }
-
+  if (error) return { slide: null, error: error.message };
   return { slide: data, error: null };
 }
 
@@ -389,10 +378,7 @@ export async function createTestimonial(testimonial: Partial<Testimonial>): Prom
     .select()
     .single();
 
-  if (error) {
-    return { testimonial: null, error: error.message };
-  }
-
+  if (error) return { testimonial: null, error: error.message };
   return { testimonial: data, error: null };
 }
 

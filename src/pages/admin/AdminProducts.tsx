@@ -18,7 +18,7 @@ export default function AdminProducts() {
   useEffect(() => {
     if (searchQuery) {
       setFilteredProducts(
-        products.filter(p => 
+        products.filter(p =>
           p.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
           p.category_name?.toLowerCase().includes(searchQuery.toLowerCase())
         )
@@ -50,10 +50,29 @@ export default function AdminProducts() {
 
   const formatPrice = (price: number) => `R${price?.toLocaleString() || 0}`;
 
+  // Get price display - range or single, NO strikethrough
+  const getPriceDisplay = (product: Product) => {
+    const sizeVariants = product.variants?.filter(v => v.variant_type === 'size') || [];
+    if (sizeVariants.length > 0) {
+      const adjustments = sizeVariants.map(v => v.price_adjustment || 0);
+      const minAdj = Math.min(...adjustments);
+      const maxAdj = Math.max(...adjustments);
+      const basePrice = product.price || 0;
+      
+      if (minAdj !== maxAdj) {
+        const low = basePrice + minAdj;
+        const high = basePrice + maxAdj;
+        return `R${low.toLocaleString()} – R${high.toLocaleString()}`;
+      }
+    }
+    
+    return formatPrice(product.price);
+  };
+
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin w-8 h-8 border-4 border-[#005EE9] border-t-transparent rounded-full" />
+      <div className="min-h-[60vh] flex items-center justify-center">
+        <div className="animate-spin w-8 h-8 border-4 border-[#005EE9] border-t-transparent rounded-full"></div>
       </div>
     );
   }
@@ -61,14 +80,14 @@ export default function AdminProducts() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-serif text-[#0F172A]">Products</h1>
-          <p className="text-gray-500">Manage your product catalog</p>
+          <p className="text-sm text-gray-500 mt-1">Manage your product catalog</p>
         </div>
         <Link
           to="/admin/products/new"
-          className="flex items-center justify-center gap-2 bg-[#005EE9] text-white px-4 py-2 rounded-lg hover:bg-[#0F172A] transition-colors"
+          className="flex items-center gap-2 bg-[#005EE9] text-white px-4 py-2 rounded-lg hover:bg-[#0F172A] transition-colors"
         >
           <Plus className="w-4 h-4" />
           Add Product
@@ -135,14 +154,7 @@ export default function AdminProducts() {
                     </td>
                     <td className="px-6 py-4 text-sm">{product.category_name || 'Uncategorized'}</td>
                     <td className="px-6 py-4">
-                      <div className="flex items-center gap-2">
-                        <span className="font-medium">{formatPrice(product.price)}</span>
-                        {product.original_price && (
-                          <span className="text-sm text-gray-400 line-through">
-                            {formatPrice(product.original_price)}
-                          </span>
-                        )}
-                      </div>
+                      <span className="font-medium">{getPriceDisplay(product)}</span>
                     </td>
                     <td className="px-6 py-4">
                       <span className={`text-sm ${

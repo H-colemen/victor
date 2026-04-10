@@ -1,7 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://lbsweigzfibryltxgvgu.supabase.co';
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxic3dlaWd6ZmlicnlsdHhndmd1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU0ODczMjQsImV4cCI6MjA5MTA2MzMyNH0.8In35I41UjXMWs8NNTKq2ESZveOoSA_GH9Hh0bgPMzA';
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
@@ -44,6 +44,7 @@ export type ProductImage = {
   alt_text: string | null;
   sort_order: number;
   is_primary: boolean;
+  show_in_description: boolean;
   created_at: string;
 };
 
@@ -162,13 +163,12 @@ export async function uploadImage(file: File, bucket: string, path: string) {
       cacheControl: '3600',
       upsert: true,
     });
-  
+
   if (error) throw error;
-  
-  const { data: { publicUrl } } = supabase.storage
-    .from(bucket)
-    .getPublicUrl(data.path);
-  
+
+  // Manually construct the public URL to ensure correct format
+  const publicUrl = `${supabaseUrl}/storage/v1/object/public/${bucket}/${data.path}`;
+
   return publicUrl;
 }
 
@@ -176,6 +176,6 @@ export async function deleteImage(bucket: string, path: string) {
   const { error } = await supabase.storage
     .from(bucket)
     .remove([path]);
-  
+
   if (error) throw error;
 }

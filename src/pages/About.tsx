@@ -36,7 +36,7 @@ export default function About() {
                 About Us
               </h1>
               <p className="text-lg text-[#364151] leading-relaxed mb-6">
-                At <strong>Home and Living Furniture&apos;s</strong>, we specialize in providing high-quality, stylish, and affordable furniture by partnering directly with <strong>local and international manufacturers</strong>.
+                At <strong>homecraft & Living Furniture&apos;s</strong>, we specialize in providing high-quality, stylish, and affordable furniture by partnering directly with <strong>local and international manufacturers</strong>.
               </p>
               <p className="text-lg text-[#364151] leading-relaxed mb-6">
                 Instead of a traditional showroom, we operate through a <strong>network of warehouses</strong>, ensuring a <strong>wide selection of products at competitive prices</strong>.
@@ -45,7 +45,7 @@ export default function About() {
             <div className="aspect-video lg:aspect-square bg-gray-100 rounded-lg overflow-hidden">
               <img
                 src="https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=800&q=80"
-                alt="About Home and Living Furniture's"
+                alt="About homecraft & Living Furniture's"
                 className="w-full h-full object-cover"
               />
             </div>
@@ -139,7 +139,7 @@ export default function About() {
       <section className="py-16 lg:py-24 bg-[#0F172A]">
         <div className="container-custom text-center">
           <h2 className="text-[clamp(28px,4vw,40px)] font-serif text-white mb-4">
-            Home and Living Furniture&apos;s
+            homecraft & Living Furniture&apos;s
           </h2>
           <p className="text-xl text-white/80 mb-8 max-w-2xl mx-auto">
             Connecting you to comfort, delivered with care.

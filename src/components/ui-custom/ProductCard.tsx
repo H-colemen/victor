@@ -12,12 +12,31 @@ interface ProductCardProps {
 export default function ProductCard({ product, showSwatches = true }: ProductCardProps) {
   const { addToCart } = useCart();
   const [addedToCart, setAddedToCart] = useState(false);
-  
-  // Get color variants if available
+
   const colorVariants = product.variants?.filter(v => v.variant_type === 'color') || [];
+  const sizeVariants = product.variants?.filter(v => v.variant_type === 'size') || [];
   const [selectedColor, setSelectedColor] = useState(colorVariants[0]?.variant_value);
 
   const formatPrice = (price: number) => `R${price?.toLocaleString() || 0}`;
+
+  // Compute price display - ONLY range or single price, NO strikethrough
+  const getPriceDisplay = () => {
+    if (sizeVariants.length > 0) {
+      const adjustments = sizeVariants.map(v => v.price_adjustment || 0);
+      const minAdj = Math.min(...adjustments);
+      const maxAdj = Math.max(...adjustments);
+      const basePrice = product.price || 0;
+
+      if (minAdj !== maxAdj) {
+        const low = basePrice + minAdj;
+        const high = basePrice + maxAdj;
+        return `R${low.toLocaleString()} – R${high.toLocaleString()}`;
+      }
+    }
+
+    // Single price only - no strikethrough ever
+    return formatPrice(product.price);
+  };
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -27,52 +46,46 @@ export default function ProductCard({ product, showSwatches = true }: ProductCar
     setTimeout(() => setAddedToCart(false), 1500);
   };
 
-  const renderStars = (rating: number) => {
-    return (
-      <div className="flex items-center gap-0.5">
-        {[...Array(5)].map((_, i) => (
-          <Star
-            key={i}
-            className={`w-3.5 h-3.5 ${
-              i < Math.round(rating || 0) ? 'fill-[#FDA256] text-[#FDA256]' : 'text-gray-300'
-            }`}
-          />
-        ))}
-      </div>
-    );
-  };
+  const renderStars = (rating: number) => (
+    <div className="flex gap-0.5">
+      {[...Array(5)].map((_, i) => (
+        <Star
+          key={i}
+          className={`w-3.5 h-3.5 ${i < Math.round(rating || 0) ? 'fill-[#FDA256] text-[#FDA256]' : 'text-gray-300'}`}
+        />
+      ))}
+    </div>
+  );
 
   const productImage = product.primary_image || product.images?.[0]?.image_url || 'https://via.placeholder.com/400';
   const productName = product.name || 'Product';
   const productCategory = product.category_name || product.category_slug || 'Uncategorized';
 
   return (
-    <div className="product-card bg-white group">
+    <div className="group relative flex flex-col h-full">
       {/* Image Container */}
-      <div className="relative overflow-hidden aspect-square bg-gray-100">
-        <Link to={`/product/${product.slug || product.id}`}>
-          <img
-            src={productImage}
-            alt={productName}
-            className="w-full h-full object-cover transition-transform duration-400 group-hover:scale-105"
-            loading="lazy"
-          />
-        </Link>
+      <Link to={`/product/${product.slug || product.id}`} className="block relative aspect-[4/3] overflow-hidden rounded-sm bg-gray-100">
+        <img
+          src={productImage}
+          alt={productName}
+          className="w-full h-full object-cover transition-transform duration-400 group-hover:scale-105"
+          loading="lazy"
+        />
         
         {/* Sale Badge */}
-        {product.is_on_sale && product.original_price && (
+        {product.is_on_sale && (
           <span className="absolute top-3.5 left-3.5 bg-white text-[#0F172A] text-xs font-medium px-2.5 py-1 rounded-full shadow-[0_2px_8px_rgba(0,0,0,0.12)] z-10">
             Sale!
           </span>
         )}
-        
+
         {/* New Badge */}
         {product.is_new && !product.is_on_sale && (
           <span className="absolute top-3.5 left-3.5 bg-[#005EE9] text-white text-xs font-medium px-2.5 py-1 rounded-full shadow-[0_2px_8px_rgba(0,0,0,0.12)] z-10">
             New
           </span>
         )}
-        
+
         {/* Add to Cart Button */}
         <button
           onClick={handleAddToCart}
@@ -82,8 +95,8 @@ export default function ProductCard({ product, showSwatches = true }: ProductCar
         >
           <ShoppingBag className="w-4 h-4" />
         </button>
-      </div>
-      
+      </Link>
+
       {/* Product Info */}
       <div className="pt-4 pb-2">
         {/* Rating */}
@@ -92,48 +105,51 @@ export default function ProductCard({ product, showSwatches = true }: ProductCar
             {renderStars(product.rating)}
           </div>
         )}
-        
+
         {/* Title */}
-        <Link 
+        <Link
           to={`/product/${product.slug || product.id}`}
           className="block text-sm font-medium text-[#0F172A] hover:text-[#005EE9] transition-colors line-clamp-2 mb-1"
         >
           {productName}
         </Link>
-        
+
         {/* Category */}
         <p className="text-xs uppercase tracking-wide text-gray-500 mb-2">
           {productCategory}
         </p>
-        
-        {/* Price */}
-        <div className="flex items-center gap-2">
-          {product.original_price ? (
-            <>
-              <span className="text-sm text-gray-400 line-through">
-                {formatPrice(product.original_price)}
-              </span>
-              <span className="text-[15px] font-medium text-[#0F172A]">
-                {formatPrice(product.price)}
-              </span>
-            </>
-          ) : (
-            <span className="text-[15px] font-medium text-[#364151]">
-              {formatPrice(product.price)}
-            </span>
-          )}
+
+        {/* Price - NO strikethrough, only range or single price */}
+        <div className="flex items-center gap-2 mb-3">
+          <span className="text-[15px] font-medium text-[#0F172A]">
+            {getPriceDisplay()}
+          </span>
         </div>
-        
+
+        {/* Size Variant Pills */}
+        {sizeVariants.length > 0 && (
+          <div className="flex flex-wrap gap-1.5 mb-3">
+            {sizeVariants.map((variant) => (
+              <span
+                key={variant.id}
+                className="px-2.5 py-1 text-xs border border-gray-300 rounded text-[#0F172A]"
+              >
+                {variant.variant_name}
+              </span>
+            ))}
+          </div>
+        )}
+
         {/* Color Swatches */}
         {showSwatches && colorVariants.length > 0 && (
-          <div className="flex gap-1.5 mt-3">
+          <div className="flex gap-1.5 mt-1">
             {colorVariants.slice(0, 4).map((variant) => (
               <button
                 key={variant.id}
                 onClick={() => setSelectedColor(variant.variant_value)}
                 className={`w-5 h-5 rounded border-2 transition-all ${
-                  selectedColor === variant.variant_value 
-                    ? 'border-[#0F172A] scale-110' 
+                  selectedColor === variant.variant_value
+                    ? 'border-[#0F172A] scale-110'
                     : 'border-transparent hover:border-gray-300'
                 }`}
                 style={{ backgroundColor: variant.variant_value }}

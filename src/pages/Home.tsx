@@ -14,9 +14,7 @@ export default function Home() {
   const [testimonials, setTestimonials] = useState<{text: string; author: string; location?: string}[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    loadHomeData();
-  }, []);
+  useEffect(() => { loadHomeData(); }, []);
 
   useEffect(() => {
     if (heroSlides.length === 0) return;
@@ -44,76 +42,77 @@ export default function Home() {
   };
 
   const trustItems = [
-    {
-      icon: Lock,
-      title: "Secure Payment",
-      description: "Shop with confidence! We offer safe and encrypted payment options for a worry-free checkout.",
-    },
-    {
-      icon: Package,
-      title: "Delivered With Care",
-      description: "Your furniture is handled with the utmost care to ensure it arrives safely and in perfect condition.",
-    },
-    {
-      icon: HeartHandshake,
-      title: "Excellent Service",
-      description: "From browsing to delivery, our friendly team is here to provide a seamless and satisfying shopping experience.",
-    },
+    { icon: Lock, title: "Secure Payment", description: "Shop with confidence! We offer safe and encrypted payment options for a worry-free checkout." },
+    { icon: Package, title: "Delivered With Care", description: "Your furniture is handled with the utmost care to ensure it arrives safely and in perfect condition." },
+    { icon: HeartHandshake, title: "Excellent Service", description: "From browsing to delivery, our friendly team is here to provide a seamless and satisfying shopping experience." },
   ];
+
+  const heroTitle = (() => {
+    const title = heroSlides[currentSlide]?.title;
+    if (!title) return "Welcome to homecraft & Living";
+    if (/homecraft\s+homes?/i.test(title)) return "homecraft & Living";
+    return title;
+  })();
 
   if (isLoading) {
     return (
-      // No pt-24 — header is absolute so it doesn't push content
-      <main className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin w-12 h-12 border-4 border-[#005EE9] border-t-transparent rounded-full" />
-      </main>
+      </div>
     );
   }
 
   return (
-    <main>
-      {/* Hero Section — relative so the absolute header overlays it perfectly */}
+    <>
+      {/*
+        Hero Section
+        ─────────────────────────────────────────────────────────────────────
+        The Header on the home page is `absolute` (see Header.tsx), so it
+        floats on top of this section and takes up NO space in the document
+        flow. That means this section naturally starts at y=0 — no negative
+        margin is needed (and using one causes misalignment).
+
+        We use `h-screen` so the hero fills the full viewport height.
+        `pt-24` on the inner text container nudges the content down by the
+        same 96px (h-24) as the header height, keeping it visually centred
+        within the visible area below the nav bar.
+      */}
       <section className="relative h-screen min-h-[600px] overflow-hidden">
         {/* Slides */}
         <div className="absolute inset-0">
           {heroSlides.map((slide, index) => (
             <div
               key={index}
-              className={`absolute inset-0 transition-opacity duration-1000 ${
-                index === currentSlide ? 'opacity-100' : 'opacity-0'
-              }`}
+              className={`absolute inset-0 transition-opacity duration-1000 ${index === currentSlide ? 'opacity-100' : 'opacity-0'}`}
             >
-              <div
-                className="absolute inset-0 bg-cover bg-center"
-                style={{ backgroundImage: `url(${slide.image_url})` }}
-              />
+              <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${slide.image_url})` }} />
               <div className="absolute inset-0 bg-gradient-to-br from-[#070614]/65 to-[#070614]/25" />
             </div>
           ))}
         </div>
 
-        {/* Content */}
-        <div className="relative z-10 h-full flex flex-col items-center justify-center text-center px-4">
+        {/*
+          Hero text
+          pt-24 compensates for the 96px transparent header sitting above,
+          so the text block appears vertically centred in the visible area.
+        */}
+        <div className="relative z-10 h-full flex flex-col items-center justify-center text-center px-4 pt-24">
           <p className="text-sm tracking-[3px] uppercase text-white/80 mb-5">
-            {heroSlides[currentSlide]?.title || "Welcome to HavenCraft Homes"}
+            {heroTitle}
           </p>
           <h1 className="text-[clamp(42px,7vw,80px)] text-white leading-[1.15] max-w-[800px] mb-10 font-serif">
             {heroSlides[currentSlide]?.subtitle || "Let's Bring Comfort and Elegance to Your Home"}
           </h1>
-          <Link to="/shop" className="btn-primary">
-            Shop Now
-          </Link>
+          <Link to="/shop" className="btn-primary">Shop Now</Link>
         </div>
 
-        {/* Slide Indicators */}
+        {/* Slide dots */}
         <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-2 z-10">
           {heroSlides.map((_, index) => (
             <button
               key={index}
               onClick={() => setCurrentSlide(index)}
-              className={`w-2 h-2 rounded-full transition-all ${
-                index === currentSlide ? 'bg-white w-6' : 'bg-white/50'
-              }`}
+              className={`w-2 h-2 rounded-full transition-all ${index === currentSlide ? 'bg-white w-6' : 'bg-white/50'}`}
             />
           ))}
         </div>
@@ -130,9 +129,7 @@ export default function Home() {
             <div className="text-center py-12 text-gray-500"><p>No featured products yet</p></div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {featuredProducts.map((product) => (
-                <ProductCard key={product.id} product={product} />
-              ))}
+              {featuredProducts.map((product) => <ProductCard key={product.id} product={product} />)}
             </div>
           )}
         </div>
@@ -149,9 +146,7 @@ export default function Home() {
             <div className="text-center py-12 text-gray-500"><p>No sale items yet</p></div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {saleProducts.map((product) => (
-                <ProductCard key={product.id} product={product} />
-              ))}
+              {saleProducts.map((product) => <ProductCard key={product.id} product={product} />)}
             </div>
           )}
         </div>
@@ -168,9 +163,7 @@ export default function Home() {
             <div className="text-center py-12 text-gray-500"><p>No new arrivals yet</p></div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {newArrivals.map((product) => (
-                <ProductCard key={product.id} product={product} />
-              ))}
+              {newArrivals.map((product) => <ProductCard key={product.id} product={product} />)}
             </div>
           )}
         </div>
@@ -182,11 +175,9 @@ export default function Home() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-20 items-center">
             <div>
               <p className="text-xs tracking-[3px] uppercase text-[#005EE9] mb-4">Our Story</p>
-              <h2 className="text-[clamp(32px,4vw,48px)] text-[#0F172A] leading-tight mb-6 font-serif">
-                The Heart of Cozy Living
-              </h2>
+              <h2 className="text-[clamp(32px,4vw,48px)] text-[#0F172A] leading-tight mb-6 font-serif">The Heart of Cozy Living</h2>
               <p className="text-[15px] leading-relaxed text-[#364151] mb-4">
-                At <strong>HavenCraft Homes</strong>, we believe that a home is more than just a place—it&apos;s a feeling. It&apos;s where laughter is shared, memories are made, and comfort is found.
+                At <strong>homecraft & Living</strong>, we believe that a home is more than just a place—it&apos;s a feeling.
               </p>
               <h3 className="text-xl font-serif text-[#0F172A] mt-6 mb-2">How It All Started</h3>
               <p className="text-[15px] leading-relaxed text-[#364151] mb-4">
@@ -194,16 +185,12 @@ export default function Home() {
               </p>
               <h3 className="text-xl font-serif text-[#0F172A] mt-6 mb-2">Our Promise to You</h3>
               <p className="text-[15px] leading-relaxed text-[#364151] mb-6">
-                Every piece in our collection is thoughtfully selected to offer <strong>timeless style, lasting durability, and ultimate coziness</strong>.
+                Every piece is thoughtfully selected to offer <strong>timeless style, lasting durability, and ultimate coziness</strong>.
               </p>
               <Link to="/about" className="btn-primary inline-block mt-4">Read More</Link>
             </div>
             <div className="rounded overflow-hidden aspect-[16/10] bg-[#0F172A]">
-              <img
-                src="https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=800&q=80"
-                alt="Furniture collection"
-                className="w-full h-full object-cover"
-              />
+              <img src="https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=800&q=80" alt="Furniture collection" className="w-full h-full object-cover" />
             </div>
           </div>
         </div>
@@ -236,12 +223,8 @@ export default function Home() {
         <p className="text-white/70 text-[15px] leading-relaxed max-w-lg mx-auto mb-4">
           We&apos;re more than just a furniture store—we&apos;re a brand built on the idea that <strong>home should be your favorite place</strong>.
         </p>
-        <p className="text-white/85 font-semibold mb-7">
-          Welcome to HavenCraft Homes—where comfort meets style.
-        </p>
-        <Link to="/shop" className="btn-primary hover:bg-[#005EE9]">
-          Purchase Our Best Furnitures
-        </Link>
+        <p className="text-white/85 font-semibold mb-7">Welcome to homecraft & Living—where comfort meets style.</p>
+        <Link to="/shop" className="btn-primary hover:bg-[#005EE9]">Purchase Our Best Furnitures</Link>
       </section>
 
       {/* Trust Icons */}
@@ -262,6 +245,6 @@ export default function Home() {
           </div>
         </div>
       </section>
-    </main>
+    </>
   );
 }

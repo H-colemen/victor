@@ -112,8 +112,8 @@ export default function ShippingPolicies() {
               <div className="bg-[#f8f9fb] p-4 rounded-lg">
                 <p className="text-sm text-[#364151]">
                   <strong>Need help?</strong> Contact us at{' '}
-                  <a href="mailto:orders@homeandlivingfurnitures.com" className="text-[#005EE9] hover:underline">
-                    orders@homeandlivingfurnitures.com
+                  <a href="mailto:orders@homecraftandliving.com" className="text-[#005EE9] hover:underline">
+                    orders@homecraftandliving.com
                   </a>{' '}
                   or WhatsApp us at +27 83 582 9819
                 </p>

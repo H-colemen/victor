@@ -96,9 +96,46 @@ export async function createOrder(checkoutData: CheckoutData): Promise<{ order: 
       return { order: null, error: 'Failed to create order items. Please try again.' };
     }
 
-    // Send order confirmation email (this would be handled by a serverless function)
-    // For now, we'll just return the order
-    
+    // Send order confirmation email via Supabase Edge Function
+    // Note: verify_jwt must be set to false in supabase/config.toml for this function
+    // since guest checkout users won't have a session token.
+    try {
+      const emailRes = await fetch(
+        'https://lbsweigzfibryltxgvgu.supabase.co/functions/v1/send-order-email',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            to: order.customer_email,
+            orderId: order.order_number || order.id,
+            html: `
+              <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #333;">
+                <h2 style="color: #005EE9;">Thank you for your order!</h2>
+                <p>Hi ${order.customer_first_name},</p>
+                <p>We've successfully received your order and are getting it ready for you.</p>
+                <div style="background-color: #f8f9fb; padding: 15px; border-radius: 5px; margin: 20px 0;">
+                  <p style="margin: 0;"><strong>Order Number:</strong> ${order.order_number || order.id}</p>
+                  <p style="margin: 5px 0 0 0;"><strong>Total Amount:</strong> R${order.total_amount.toLocaleString()}</p>
+                </div>
+                <p>We will send you another update once your order has shipped.</p>
+                <p>Best regards,<br/>The Homecraft &amp; Living Team</p>
+              </div>
+            `,
+          }),
+        }
+      );
+
+      if (!emailRes.ok) {
+        const errBody = await emailRes.text();
+        console.error('Email function returned an error:', emailRes.status, errBody);
+      }
+    } catch (emailError) {
+      // Log but don't surface to the user — order is already created successfully.
+      console.error('Failed to send confirmation email:', emailError);
+    }
+
     return { order, error: null };
   } catch (error) {
     console.error('Unexpected error creating order:', error);
@@ -170,12 +207,12 @@ export async function getAllOrders(): Promise<Order[]> {
 }
 
 export async function updateOrderStatus(
-  orderId: string, 
+  orderId: string,
   status: Order['status'],
   trackingInfo?: { tracking_number?: string; shipping_carrier?: string }
 ): Promise<boolean> {
   const updateData: Partial<Order> = { status };
-  
+
   if (status === 'shipped') {
     updateData.shipped_at = new Date().toISOString();
     if (trackingInfo) {
@@ -183,7 +220,7 @@ export async function updateOrderStatus(
       updateData.shipping_carrier = trackingInfo.shipping_carrier;
     }
   }
-  
+
   if (status === 'delivered') {
     updateData.delivered_at = new Date().toISOString();
   }

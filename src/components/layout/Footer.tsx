@@ -58,18 +58,18 @@ export default function Footer() {
           <div>
             <Link to="/" className="inline-block mb-4">
               <span className="text-xl font-serif tracking-widest uppercase text-white">
-                HOME & LIVING FURNITURES
+                homecraft & Living FURNITURES
               </span>
             </Link>
             <p className="text-sm text-white/55 leading-relaxed mb-6">
               Crafted for comfort, designed for style. Discover quality furniture that makes every space feel like home.
             </p>
             <a 
-              href="mailto:orders@homeandlivingfurnitures.com"
+              href="mailto:orders@homecraftandliving.com"
               className="inline-flex items-center gap-2 text-sm text-[#005EE9] hover:text-white transition-colors"
             >
               <Send className="w-4 h-4" />
-              orders@homeandlivingfurnitures.com
+              orders@homecraftandliving.com
             </a>
             
             {/* Newsletter in brand column */}
@@ -147,7 +147,7 @@ export default function Footer() {
       <div className="border-t border-white/10">
         <div className="container-custom py-6">
           <p className="text-center text-sm text-white/35">
-            ©2025. Home & Living. All Rights Reserved.
+            ©2025. homecraft & Living. All Rights Reserved.
           </p>
         </div>
       </div>
