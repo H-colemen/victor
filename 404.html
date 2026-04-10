@@ -8,8 +8,8 @@
       sessionStorage.redirect = l.href;
       l.replace(
         l.protocol + '//' + l.host +
-        l.pathname.split('/').slice(0, 2).join('/') +
-        '/?p=' + l.pathname.split('/').slice(2).join('/') +
+        l.pathname.split('/').slice(0, 1).join('/') +
+        '/?p=' + l.pathname.split('/').slice(1).join('/') +
         (l.search ? '&q=' + l.search.slice(1) : '') +
         l.hash
       );
