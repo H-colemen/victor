@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" stroke="black" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+  <!-- Roof -->
+  <path d="M8 30 L32 10 L56 30" />
+  
+  <!-- House body -->
+  <rect x="16" y="30" width="32" height="24" />
+  
+  <!-- Door -->
+  <rect x="28" y="38" width="8" height="16" />
+</svg>
